@@ -480,7 +480,7 @@ _%>
                       <td className="text-end">
                         <div className="btn-group flex-btn-group-container">
                           { props.actionButtons ? (
-                              props.actionButtons(customer, i)
+                              props.actionButtons(<%= entityInstance %>, i)
                             ) : (
                               <>
                                 <Button tag={Link} to={`/<%= entityPage %>/${<%= entityInstance %>.<%= primaryKey.name %>}`} color="info" size="sm" data-cy="entityDetailsButton">
