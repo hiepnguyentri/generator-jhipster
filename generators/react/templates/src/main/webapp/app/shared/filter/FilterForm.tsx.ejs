@@ -1,0 +1,231 @@
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import React, { Fragment, useCallback, useState } from 'react';
+import { ValidatedForm, ValidatedField } from 'react-jhipster';
+import { Row, Col, Button } from 'reactstrap';
+
+export enum FilterRelation {
+  // common
+  EQUALS = 'equals',
+  // NOT_EQUAL = 'notEquals',
+  IN = 'in',
+  SPECIFIED = 'specified',
+  // type string
+  CONTAINS = 'contains',
+  // others
+  GREATER_THAN = 'greaterThan',
+  LESS_THAN = 'lessThan',
+  GREATER_THAN_OR_EQUAL = 'greaterThanOrEqual',
+  LESS_THAN_OR_EQUAL = 'lessThanOrEqual',
+}
+
+export interface IField {
+  fieldName: string;
+  fieldType: string;
+  fieldValues?: string;
+}
+
+export interface IFilter {
+  fieldName: string;
+  relation: FilterRelation;
+  // type: string;
+  value?: string | number;
+}
+
+export interface IFilterProps<T> {
+  filters?: IFilter[];
+  onSelected?: (selected: T) => void;
+}
+
+export interface IRelationShip {
+  otherEntityName: string;
+  relationshipName: string;
+  relationshipSide: string;
+  relationshipType: string;
+  relationshipWithBuiltInEntity?: boolean;
+}
+
+export interface IEntity {
+  annotations?: any;
+  applications?: string;
+  dto?: string;
+  entityTableName?: string;
+  fields: IField[];
+  incrementalChangelog?: boolean;
+  jpaMetamodelFiltering?: boolean;
+  name?: string;
+  pagination?: string;
+  relationships?: IRelationShip[];
+  searchEngine?: string;
+  service?: string;
+}
+
+export interface IFilterFormProps {
+  entityData: IEntity;
+  loading: boolean;
+  onFilterClick: (query: string) => void;
+}
+
+export const FilterForm = (props: IFilterFormProps) => {
+  const [filters, setFilters] = useState<IFilter[]>([]);
+  const [addFilterFieldName, setAddFilterFieldName] = useState<IField>(null);
+  const [addFilterRelation, setAddFilterRelation] = useState<string>(null);
+  const [relationList, setRelationList] = useState<string[]>([]);
+  const [showAddFilter, setShowAddFilter] = useState(false);
+
+  const removeFilter = (index: number) => {
+    filters.splice(index, 1);
+    setFilters([...filters]);
+  };
+
+  const addFilter = (fieldName, relation) => {
+    setFilters(
+      filters.concat([
+        {
+          fieldName,
+          relation,
+        },
+      ]),
+    );
+    setShowAddFilter(false);
+  };
+
+  const onFilterValueChange = (value, index) => {
+    filters[index].value = value;
+  };
+
+  const onChangeAddFilterFieldName = e => {
+    const fieldName = e.target.value;
+    const field = props.entityData.fields.find(f => f.fieldName === fieldName);
+    setAddFilterFieldName(field);
+    const relations: FilterRelation[] = [
+      FilterRelation.EQUALS,
+      // FilterRelation.NOT_EQUAL,
+      FilterRelation.IN,
+      FilterRelation.SPECIFIED,
+    ];
+    if (field.fieldType === 'String' || field.fieldType === 'UUID' || field.fieldType === 'TextBlob') {
+      relations.push(FilterRelation.CONTAINS);
+    } else if (
+      field.fieldType === 'Integer' ||
+      field.fieldType === 'Long' ||
+      field.fieldType === 'BigDecimal' ||
+      field.fieldType === 'Float' ||
+      field.fieldType === 'Double' ||
+      field.fieldType === 'LocalDate' ||
+      field.fieldType === 'ZonedDateTime' ||
+      field.fieldType === 'Instant' ||
+      field.fieldType === 'Duration'
+    ) {
+      relations.push(FilterRelation.GREATER_THAN);
+      relations.push(FilterRelation.GREATER_THAN_OR_EQUAL);
+      relations.push(FilterRelation.LESS_THAN);
+      relations.push(FilterRelation.LESS_THAN_OR_EQUAL);
+    } else {
+      // Enum, Boolean, Blob, AnyBlob, ImageBlob
+    }
+    setRelationList(relations);
+  };
+
+  const onFilterClick = useCallback(() => {
+    props.onFilterClick(filters.map(filter => `${filter.fieldName}.${filter.relation}=${filter.value}`).join('&'));
+  }, [filters]);
+
+  return (
+    <Fragment>
+      <Row>
+        <Col md="8">
+          <h2 data-cy="customerDetailsHeading">Filter</h2>
+        </Col>
+      </Row>
+      <ValidatedForm defaultValues={{}} onSubmit={() => {}}>
+        <Row>
+          {filters.map((filter, i) => {
+            return (
+              <Col md={6} key={i}>
+                <ValidatedField
+                  key={`${filter.fieldName}.${filter.relation}`}
+                  label={`${filter.fieldName} : ${filter.relation}`}
+                  id={`${filter.fieldName}.${filter.relation}`}
+                  name={`${filter.fieldName}.${filter.relation}`}
+                  type={
+                    filter.relation === FilterRelation.EQUALS ||
+                    // filter.relation === FilterRelation.NOT_EQUAL ||
+                    filter.relation === FilterRelation.CONTAINS
+                      ? 'text'
+                      : 'number'
+                  }
+                  onChange={e => onFilterValueChange(e.target.value, i)}
+                />
+                <Button color="danger" type="button" onClick={() => removeFilter(i)}>
+                  &nbsp; Remove Filter
+                </Button>
+              </Col>
+            );
+          })}
+        </Row>
+        {showAddFilter && (
+          <Row>
+            <Col md={6}>
+              <ValidatedField
+                id="add-filter-fieldName"
+                name="addFilterFieldName"
+                label="Select Field Name"
+                type="select"
+                onChange={onChangeAddFilterFieldName}
+              >
+                <option value="" key="0" />
+                {props.entityData.fields.map((field, i) => {
+                  return (
+                    <option value={field.fieldName} key={i} selected={field.fieldName === addFilterFieldName?.fieldName}>
+                      {field.fieldName}
+                    </option>
+                  );
+                })}
+              </ValidatedField>
+            </Col>
+            <Col md={6}>
+              <ValidatedField
+                id="add-filter-fieldName"
+                name="addFilterFieldName"
+                label="Select Relation"
+                type="select"
+                onChange={e => setAddFilterRelation(e.target.value)}
+              >
+                <option value="" key="0" />
+                {relationList.map((relation, i) => {
+                  return (
+                    <option value={relation} key={i} selected={relation === addFilterRelation}>
+                      {relation}
+                    </option>
+                  );
+                })}
+              </ValidatedField>
+            </Col>
+            <Col md={6}>
+              <Button
+                color="warning"
+                id="real-add-filtering"
+                type="button"
+                disabled={addFilterFieldName == null || addFilterRelation == null}
+                onClick={() => addFilter(addFilterFieldName.fieldName, addFilterRelation)}
+              >
+                <FontAwesomeIcon icon="plus" />
+                &nbsp; Add Filter
+              </Button>
+            </Col>
+          </Row>
+        )}
+        <div className="d-flex justify-content-end">
+          <Button color="info" className="me-2" id="save-entity" type="submit" disabled={filters.length === 0} onClick={onFilterClick}>
+            <FontAwesomeIcon icon="search" spin={props.loading} />
+            &nbsp; Filter
+          </Button>
+          <Button color="primary" id="add-filtering" type="button" disabled={showAddFilter} onClick={() => setShowAddFilter(true)}>
+            <FontAwesomeIcon icon="plus" />
+            &nbsp; Add Filter
+          </Button>
+        </div>
+      </ValidatedForm>
+    </Fragment>
+  );
+};

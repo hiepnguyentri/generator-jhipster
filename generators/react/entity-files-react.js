@@ -26,6 +26,8 @@ export const reactFiles = {
       templates: [
         'entities/_entityFolder_/_entityFile_-detail.tsx',
         'entities/_entityFolder_/_entityFile_.tsx',
+        'entities/_entityFolder_/_entityFile_-list.tsx',
+        'entities/_entityFolder_/_entityFile_-select.tsx',
         'entities/_entityFolder_/_entityFile_.reducer.ts',
         'entities/_entityFolder_/index.tsx',
       ],
@@ -38,7 +40,11 @@ export const reactFiles = {
     {
       condition: generator => !generator.readOnly && !generator.embedded,
       ...clientApplicationTemplatesBlock(),
-      templates: ['entities/_entityFolder_/_entityFile_-delete-dialog.tsx', 'entities/_entityFolder_/_entityFile_-update.tsx'],
+      templates: [
+        'entities/_entityFolder_/_entityFile_-delete-dialog.tsx',
+        'entities/_entityFolder_/_entityFile_-update.tsx',
+        'entities/_entityFolder_/_entityFile_-update-form.tsx',
+      ],
     },
   ],
   test: [
@@ -52,6 +58,8 @@ export const reactFiles = {
 
 export async function writeEntitiesFiles({ application, entities }) {
   for (const entity of filterEntitiesAndPropertiesForClient(entities).filter(entity => !entity.builtInUser)) {
+    // eslint-disable-next-line no-console
+    console.log({ ...application, ...entity });
     await this.writeFiles({
       sections: reactFiles,
       context: { ...application, ...entity },

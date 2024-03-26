@@ -218,6 +218,9 @@ export const files = {
         'shared/DurationFormat.tsx',
         // model
         'shared/model/user.model.ts',
+        // filters
+        'shared/filter/FilterForm.tsx',
+        'shared/filter/RelationEntityLookup.tsx',
       ],
     },
     {

@@ -1,0 +1,58 @@
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import React, { ComponentType, useState } from 'react';
+import { Modal, ModalHeader, ModalBody, Button, Row, Col } from 'reactstrap';
+
+export interface IRelationEntityLookupProps {
+  entityName: string;
+  fieldLabel?: string;
+  selectedValue?: string;
+  buttonLabel?: string;
+}
+
+export interface IListEntityProps<T> {
+  select: (entity: T) => void;
+}
+
+export interface IRelationEntityLookupHocProps<T> extends IListEntityProps<T> {
+  relationEntity: IRelationEntityLookupProps;
+  setModal: (modal: React.ReactElement) => void;
+}
+
+export function relationEntityLookup<T, P extends Partial<IListEntityProps<T>>>(WrappedComponent: ComponentType<P>) {
+  return (props: P & IRelationEntityLookupHocProps<T>) => {
+    // const [showModal, setShowModal] = useState<boolean>(false);
+
+    const closeModal = () => {
+      // setShowModal(false);
+      props.setModal(null);
+    };
+    const openModal = () => {
+      // setShowModal(true);
+      props.setModal(
+        <Modal isOpen={true} toggle={closeModal} centered={true} scrollable={true} fullscreen={true}>
+          <ModalHeader toggle={closeModal}>Filter and select {props.relationEntity.entityName}</ModalHeader>
+          <ModalBody id="travelBookingApp.booking.delete.question">
+            <WrappedComponent {...props} select={select} />
+          </ModalBody>
+        </Modal>,
+      );
+    };
+    const select = (entity: T) => {
+      props.select(entity);
+      closeModal();
+    };
+
+    return (
+      <Row>
+        <Col md="3">{props.relationEntity.fieldLabel ?? props.relationEntity.entityName}</Col>
+        <Col md="4"> {props.relationEntity.selectedValue} </Col>
+        <Col md="5">
+          <Button color="primary" onClick={openModal} className="form-control">
+            <FontAwesomeIcon icon="search" />
+            &nbsp; {props.relationEntity.buttonLabel ?? `Select ${props.relationEntity.entityName}`}
+          </Button>
+        </Col>
+      </Row>
+    );
+  };
+}

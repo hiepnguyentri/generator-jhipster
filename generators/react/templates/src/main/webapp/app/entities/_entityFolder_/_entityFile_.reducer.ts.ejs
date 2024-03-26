@@ -31,6 +31,11 @@ import { cleanEntity } from 'app/shared/util/entity-utils';
 import { IQueryParams, createEntitySlice, EntityState, serializeAxiosError } from 'app/shared/reducers/reducer.utils';
 import { I<%= entityReactName %>, defaultValue } from 'app/shared/model/<%= entityModelFileName %>.model';
 
+export interface I<%= entityReactName %>CreateEntity {
+  entity: ICustomer;
+  callback?: (result: ICustomer) => void;
+}
+
 const initialState: EntityState<I<%= entityReactName %>> = {
   loading: false,
   errorMessage: null,
@@ -67,11 +72,11 @@ export const searchEntities = createAsyncThunk(
 );
 
 <%_ } _%>
-export const getEntities = createAsyncThunk('<%= entityInstance %>/fetch_entity_list', async ({ <%_ if(!paginationNo) { _%>page, size, <%_ } _%>sort }: IQueryParams) => {
+export const getEntities = createAsyncThunk('<%= entityInstance %>/fetch_entity_list', async ({ <%_ if(!paginationNo) { _%>page, size, <%_ } _%>sort, query }: IQueryParams) => {
 <%_ if (!paginationNo) { _%>
-  const requestUrl = `${apiUrl}?${sort ? `page=${page}&size=${size}&sort=${sort}&` : ''}cacheBuster=${new Date().getTime()}`;
+  const requestUrl = `${apiUrl}?${sort ? `${query?.length > 0 ? `${query}&` : ''}page=${page}&size=${size}&sort=${sort}&` : query}cacheBuster=${new Date().getTime()}`;
 <%_ } else { _%>
-  const requestUrl = `${apiUrl}?${sort ? `sort=${sort}&` : ''}cacheBuster=${new Date().getTime()}`;
+  const requestUrl = `${apiUrl}?${sort ? `${query?.length > 0 ? `${query}&` : ''}sort=${sort}&` : query}cacheBuster=${new Date().getTime()}`;
 <%_ } _%>
   return axios.get<I<%= entityReactName %>[]>(requestUrl);
 });
@@ -88,13 +93,14 @@ export const getEntity = createAsyncThunk(
 <%_ if (!readOnly) { _%>
 export const createEntity = createAsyncThunk(
   '<%= entityInstance %>/create_entity',
-  async (entity: I<%= entityReactName %>, thunkAPI) => {
+  async (payload: I<%= entityReactName %>CreateEntity, thunkAPI) => {
   <%_ if (!paginationInfiniteScroll) { _%>
-    const result = await axios.post<I<%= entityReactName %>>(apiUrl, cleanEntity(entity));
+    const result = await axios.post<I<%= entityReactName %>>(apiUrl, cleanEntity(payload.entity));
+    payload.callback && payload.callback(result.data);
     thunkAPI.dispatch(getEntities({}));
     return result;
   <%_ } else { _%>
-    return axios.post<I<%= entityReactName %>>(apiUrl, cleanEntity(entity));
+    return axios.post<I<%= entityReactName %>>(apiUrl, cleanEntity(payload.entity));
   <%_ } _%>
   },
   { serializeError: serializeAxiosError }
@@ -102,13 +108,14 @@ export const createEntity = createAsyncThunk(
 
 export const updateEntity = createAsyncThunk(
   '<%= entityInstance %>/update_entity',
-  async (entity: I<%= entityReactName %>, thunkAPI) => {
+  async (payload: I<%= entityReactName %>CreateEntity, thunkAPI) => {
   <%_ if (!paginationInfiniteScroll) { _%>
-    const result = await axios.put<I<%= entityReactName %>>(`${apiUrl}/${entity.<%= primaryKey.name %>}`, cleanEntity(entity));
+    const result = await axios.put<I<%= entityReactName %>>(`${apiUrl}/${payload.entity.<%= primaryKey.name %>}`, cleanEntity(payload.entity));
+    payload.callback && payload.callback(result.data);
     thunkAPI.dispatch(getEntities({}));
     return result;
   <%_ } else { _%>
-    return axios.put<I<%= entityReactName %>>(`${apiUrl}/${entity.<%= primaryKey.name %>}`, cleanEntity(entity));
+    return axios.put<I<%= entityReactName %>>(`${apiUrl}/${payload.entity.<%= primaryKey.name %>}`, cleanEntity(payload.entity));
   <%_ } _%>
   },
   { serializeError: serializeAxiosError }
@@ -116,13 +123,14 @@ export const updateEntity = createAsyncThunk(
 
 export const partialUpdateEntity = createAsyncThunk(
   '<%= entityInstance %>/partial_update_entity',
-  async (entity: I<%= entityReactName %>, thunkAPI) => {
+  async (payload: I<%= entityReactName %>CreateEntity, thunkAPI) => {
   <%_ if (!paginationInfiniteScroll) { _%>
-    const result = await axios.patch<I<%= entityReactName %>>(`${apiUrl}/${entity.<%= primaryKey.name %>}`, cleanEntity(entity));
+    const result = await axios.patch<I<%= entityReactName %>>(`${apiUrl}/${payload.entity.<%= primaryKey.name %>}`, cleanEntity(payload.entity));
+    payload.callback && payload.callback(result.data);
     thunkAPI.dispatch(getEntities({}));
     return result;
   <%_ } else { _%>
-    return axios.patch<I<%= entityReactName %>>(`${apiUrl}/${entity.<%= primaryKey.name %>}`, cleanEntity(entity));
+    return axios.patch<I<%= entityReactName %>>(`${apiUrl}/${payload.entity.<%= primaryKey.name %>}`, cleanEntity(payload.entity));
   <%_ } _%>
   },
   { serializeError: serializeAxiosError }

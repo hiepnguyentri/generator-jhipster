@@ -73,5 +73,6 @@ export default function cleanupOldFilesTask({ application } = {}) {
   }
   if (this.isJhipsterVersionLessThan('7.9.3')) {
     this.removeFile(`${application.clientSrcDir}app/config/translation-middleware.ts`);
+    this.removeFile(`${application.clientSrcDir}app/shared/error/error-boundary-route.spec.tsx`);
   }
 }
