@@ -301,7 +301,19 @@ export const <%= entityReactName %>List = (props: I<%= entityReactName %>ListPro
     getAllEntities(q);
   };
 
-  const entityData = { fields: [] };
+  const entityData = { 
+    fields: [
+<%_ for (field of fields) { _%>
+      {
+        fieldName: '<%= field.fieldName %>',
+        fieldType: '<%= field.fieldType %>',
+  <%_ if (field.fieldValues != null)  { _%>
+        fieldValues: <%- JSON.stringify(field.fieldValues) %>,
+  <%_ } _%>
+      },    
+<%_ } _%>
+    ] 
+  };
 
   return (
     <div>
