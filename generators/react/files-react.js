@@ -210,6 +210,8 @@ export const files = {
         'shared/util/date-utils.ts',
         'shared/util/pagination.constants.ts',
         'shared/util/entity-utils.ts',
+        'shared/util/FilterForm.tsx',
+        'shared/util/RelationEntityLookup.tsx',
         // components
         'shared/auth/private-route.tsx',
         'shared/error/error-boundary.tsx',
@@ -218,9 +220,6 @@ export const files = {
         'shared/DurationFormat.tsx',
         // model
         'shared/model/user.model.ts',
-        // filters
-        'shared/filter/FilterForm.tsx',
-        'shared/filter/RelationEntityLookup.tsx',
       ],
     },
     {
