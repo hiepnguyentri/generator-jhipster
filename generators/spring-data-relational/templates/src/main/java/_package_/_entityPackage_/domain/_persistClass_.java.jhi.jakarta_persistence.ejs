@@ -90,16 +90,16 @@ import org.hibernate.type.SqlTypes;
     @NotNull
         <%_ } _%>
     @JoinTable(name = "<%= relationship.joinTable.name %>",
-               joinColumns = <%= primaryKey.fields.length > 1 ? '{' : '' %>
-                   <%_ primaryKey.fields.forEach((field, idx) => { _%>
-                   <%= idx === 0 ? '' : ',' %>@JoinColumn(name = "<%= `${entityTableName}_${field.columnName}` %>")
-                   <%_ }); _%>
-               <%= primaryKey.fields.length > 1 ? '}' : '' %>,
-               inverseJoinColumns = <%= relationship.otherEntity.primaryKey.fields.length > 1 ? '{' : '' %>
-                   <%_ relationship.otherEntity.primaryKey.fields.forEach((field, idx) => { _%>
-                   <%= idx === 0 ? '' : ',' %>@JoinColumn(name = "<%= `${relationship.columnName}_${field.columnName}` %>"))
-                   <%_ }); _%>
-               <%= relationship.otherEntity.primaryKey.fields.length > 1 ? '}' : '' %>
+                joinColumns = <%= primaryKey.fields.length > 1 ? '{' : '' %>
+                    %_ primaryKey.fields.forEach((field, idx) => { _%>
+                    %= idx === 0 ? '' : ',' %>@JoinColumn(name = "<%= `${entityTableName}_${field.columnName}` %>")
+                    %_ }); _%>
+                <%= primaryKey.fields.length > 1 ? '}' : '' %>,
+                inverseJoinColumns = <%= relationship.otherEntity.primaryKey.fields.length > 1 ? '{' : '' %>
+                    <%_ relationship.otherEntity.primaryKey.fields.forEach((field, idx) => { _%>
+                    <%= idx === 0 ? '' : ',' %>@JoinColumn(name = "<%= `${relationship.columnName}_${field.columnName}` %>"))
+                    <%_ }); _%>
+                <%= relationship.otherEntity.primaryKey.fields.length > 1 ? '}' : '' %>
       <%_ } _%>
   <%_ } else { -%>
       <%_ if (relationship.ignoreOtherSideProperty) { -%>
@@ -126,3 +126,34 @@ import org.hibernate.type.SqlTypes;
   <%_ } -%>
 <&_ } -&>
 <%_ } -%>
+
+
+<&_ if (fragment.classAdditionalFieldsMethodsSection) { -&>
+
+  @PrePersist
+  public void preCreate() {
+  <%_ for (const field of fields) { -%>
+      <%_ if (field.fieldName === 'createdAt') { _%>
+      this.<%= field.fieldName %> = ZonedDateTime.now();
+      <%_ } _%>
+      <%_ if (field.fieldName === 'createdBy') { _%>
+          this.<%= field.fieldName %> = SecurityUtils.getCurrentUserLogin();
+          <%_ } _%>
+  <%_ } -%>
+  }
+
+
+
+  @PreUpdate
+  public void preUpdate() {
+  <%_ for (const field of fields) { -%>
+      <%_ if (field.fieldName === 'updatedAt') { _%>
+      this.<%= field.fieldName %> = ZonedDateTime.now();
+      <%_ } _%>
+      <%_ if (field.fieldName === 'updatedBy') { _%>
+          this.<%= field.fieldName %> = SecurityUtils.getCurrentUserLogin();
+          <%_ } _%>
+  <%_ } -%>
+  }
+
+<&_ } -&>
