@@ -136,9 +136,6 @@ import org.hibernate.type.SqlTypes;
       <%_ if (field.fieldName === 'createdAt') { _%>
       this.<%= field.fieldName %> = ZonedDateTime.now();
       <%_ } _%>
-      <%_ if (field.fieldName === 'createdBy') { _%>
-          this.<%= field.fieldName %> = SecurityUtils.getCurrentUserLogin();
-          <%_ } _%>
   <%_ } -%>
   }
 
@@ -150,9 +147,6 @@ import org.hibernate.type.SqlTypes;
       <%_ if (field.fieldName === 'updatedAt') { _%>
       this.<%= field.fieldName %> = ZonedDateTime.now();
       <%_ } _%>
-      <%_ if (field.fieldName === 'updatedBy') { _%>
-          this.<%= field.fieldName %> = SecurityUtils.getCurrentUserLogin();
-          <%_ } _%>
   <%_ } -%>
   }
 

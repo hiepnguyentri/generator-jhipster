@@ -33,6 +33,11 @@ const repository = entityInstance  + 'Repository';
 const searchRepository = entityInstance  + 'SearchRepository';
 
 _%>
+<%_ if (relationships.filter(it => it.relationshipFieldName === 'createdBy' || it.relationshipFieldName === 'updatedBy').length > 0) { _%>
+import <%= entityAbsolutePackage %>.domain.User;
+import <%= entityAbsolutePackage %>.repository.UserRepository;
+import <%= entityAbsolutePackage %>.security.SecurityUtils;
+<%_ } _%>
 <%_ if (serviceImpl) { _%>
 import <%= entityAbsolutePackage %>.service.<%= entityClass %>Service;
 <%_ } _%>
