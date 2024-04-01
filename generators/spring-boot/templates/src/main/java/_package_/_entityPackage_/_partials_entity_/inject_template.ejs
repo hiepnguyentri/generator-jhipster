@@ -18,6 +18,8 @@
 -%>
 <%_
   const beans = [];
+  var isNeedLoginInfo;
+  var enableAuditHistory;
   if (viaService) {
     beans.push({class: `${entityClass}Service`, instance: `${entityInstance}Service`});
     if (!readOnly) {
@@ -47,8 +49,12 @@
       beans.push({class: `${mapsIdEntity}Repository`, instance: mapsIdRepoInstance});
     }
   }
-  if (saveUserSnapshot && (viaService || constructorName.endsWith('Resource'))) {
+  if ((saveUserSnapshot && (viaService || constructorName.endsWith('Resource'))) || isNeedLoginInfo) {
     beans.push({class: 'UserRepository', instance: 'userRepository'});
+  }
+  if (enableAuditHistory) {
+    beans.push({class: 'AuditHistoryRepository', instance: 'auditHistoryRepository'});
+    beans.push({class: 'ObjectMapper', instance: 'objectMapper'});
   }
 _%>
 

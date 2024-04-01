@@ -31,12 +31,19 @@ const entityToDto = 'toDto';
 const entityToDtoReference = mapper + '::'+ 'toDto';
 const repository = entityInstance  + 'Repository';
 const searchRepository = entityInstance  + 'SearchRepository';
+const isNeedLoginInfo = relationships.filter(it => it.relationshipFieldName === 'createdBy' || it.relationshipFieldName === 'updatedBy').length > 0;
 
 _%>
-<%_ if (relationships.filter(it => it.relationshipFieldName === 'createdBy' || it.relationshipFieldName === 'updatedBy').length > 0) { _%>
+<%_ if (isNeedLoginInfo) { _%>
 import <%= entityAbsolutePackage %>.domain.User;
 import <%= entityAbsolutePackage %>.repository.UserRepository;
 import <%= entityAbsolutePackage %>.security.SecurityUtils;
+<%_ } _%>
+<%_ if (enableAuditHistory) { _%>
+  import <%= entityAbsolutePackage %>.domain.AuditHistory;
+  import <%= entityAbsolutePackage %>.repository.AuditHistoryRepository;
+  import com.fasterxml.jackson.databind.ObjectMapper;
+  import java.time.*;
 <%_ } _%>
 <%_ if (serviceImpl) { _%>
 import <%= entityAbsolutePackage %>.service.<%= entityClass %>Service;
@@ -101,7 +108,7 @@ import java.util.stream.StreamSupport;
 public class <%= serviceClassName %><% if (serviceImpl) { %> implements <%= entityClass %>Service<% } %> {
 
     private final Logger log = LoggerFactory.getLogger(<%= serviceClassName %>.class);
-<%- include('../../_partials_entity_/inject_template', {viaService: false, constructorName: serviceClassName, queryService: false, isUsingMapsId: isUsingMapsId, mapsIdAssoc: mapsIdAssoc, isController: false}); -%>
+<%- include('../../_partials_entity_/inject_template', {viaService: false, isNeedLoginInfo: isNeedLoginInfo, constructorName: serviceClassName, queryService: false, isUsingMapsId: isUsingMapsId, mapsIdAssoc: mapsIdAssoc, isController: false}); -%>
 
 <%_ if (!serviceImpl) { _%>
     /**
@@ -116,7 +123,7 @@ public class <%= serviceClassName %><% if (serviceImpl) { %> implements <%= enti
 <%_ } _%>
     public <% if (reactive) { %>Mono<<% } %><%= instanceType %><% if (reactive) { %>><% } %> save(<%= instanceType %> <%= instanceName %>) {
         log.debug("Request to save <%= entityClass %> : {}", <%= instanceName %>);
-<%- include('/_global_partials_entity_/save_template', {saveNewEntityOperation: true, returnDirectly: true}); -%>
+<%- include('/_global_partials_entity_/save_template', {isService: true, saveNewEntityOperation: true, returnDirectly: true}); -%>
     }
 <%_ if (updatableEntity) { _%>
 
@@ -133,7 +140,7 @@ public class <%= serviceClassName %><% if (serviceImpl) { %> implements <%= enti
   <%_ } _%>
     public <% if (reactive) { %>Mono<<% } %><%= instanceType %><% if (reactive) { %>><% } %> update(<%= instanceType %> <%= instanceName %>) {
         log.debug("Request to update <%= entityClass %> : {}", <%= instanceName %>);
-<%- include('/_global_partials_entity_/save_template', {saveNewEntityOperation: false, returnDirectly: true}); -%>
+<%- include('/_global_partials_entity_/save_template', {isService: true, saveNewEntityOperation: false, returnDirectly: true}); -%>
     }
 
   <%_ if (!serviceImpl) { _%>

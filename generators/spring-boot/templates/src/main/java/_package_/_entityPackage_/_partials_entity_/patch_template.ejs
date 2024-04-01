@@ -35,7 +35,7 @@ _%>
   <%_ if (dtoMapstruct || fields.filter(field => !field.id && !field.transient).length > 0) { _%>
     .map(existing<%= entityClass %> -> {
   <%_ if (dtoMapstruct) { _%>
-       <%= mapper %>.partialUpdate(existing<%= entityClass %>, <%= instanceName %>);
+        <%= mapper %>.partialUpdate(existing<%= entityClass %>, <%= instanceName %>);
   <%_ } else { _%>
     <%_ for (const field of fields.filter(field => !field.id && !field.transient)) { _%>
     if (<%= instanceName %>.get<%= field.fieldInJavaBeanMethod %>() != null) {
@@ -48,6 +48,42 @@ _%>
       <%_ } _%>
     <%_ } %>
   <% } %>
+  <%_
+    let hasUpdatedBy = false;
+    for (const relationship of relationships) {
+        if (relationship.relationshipFieldName === 'updatedBy') {
+            hasUpdatedBy = true;
+        }
+    }
+  _%>
+  <%_ if (isService && (enableAuditHistory || hasUpdatedBy)) { _%>
+        Optional<String> usernameOptional = SecurityUtils.getCurrentUserLogin();
+        if (usernameOptional.isPresent()) {
+            String username = usernameOptional.get();
+            Optional<User> userOptional = userRepository.findOneByLogin(username);
+            if (userOptional.isPresent()) {
+                User user = userOptional.get();
+    <%_ if (hasUpdatedBy) { _%>
+                existing<%= entityClass %>.setUpdatedBy(user);
+    <%_ } _%>
+    <%_ if (enableAuditHistory) { _%>
+                auditHistory.setChangeByUserId(user.getId());
+    <%_ } _%>
+            }
+        }
+  <%_ } _%>
+  <%_ if (isService && enableAuditHistory) { _%>
+    auditHistory.setChangeAtTime(ZonedDateTime.now());
+    try {
+        auditHistory.setChangeContent(objectMapper.writeValueAsString(<%- instanceName %>));
+    } catch (Exception e) {
+        log.error("Error while converting <%- instanceName %> to json", e);
+        auditHistory.setChangeContent(<%- instanceName %>.toString());
+    }
+    auditHistory.setEntityId(existing<%= entityClass %>.getId());
+    auditHistory.setEntityName(existing<%= entityClass %>.getClass().getSimpleName());
+    auditHistoryRepository.save(auditHistory);
+  <%_ } _%>
     return existing<%= entityClass %>;
     })
   <%_ } %>
@@ -64,6 +100,6 @@ _%>
       })
   <%_ } _%>
   <%_ if (dtoMapstruct) { _%>
-   .map(<%= mapper %>::toDto)
+    .map(<%= mapper %>::toDto)
   <%_ } _%>;
 <%_ } %>

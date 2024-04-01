@@ -74,6 +74,7 @@ export const loadServerConfig = ({ config, application }: { config: any; applica
       'enableGradleEnterprise',
       'gradleEnterpriseHost',
       'feignClient',
+      'enableAuditHistory',
     ]),
     {
       packageFolder: ({ packageFolder }) => (packageFolder ? normalizePathEnd(packageFolder) : packageFolder),
@@ -174,6 +175,8 @@ export const loadDerivedServerConfig = ({ application }: { application: any }) =
     imperativeOrReactive: ({ reactive }) => (reactive ? 'reactive' : 'imperative'),
     generateSpringAuditor: ctx => ctx.databaseTypeSql || ctx.databaseTypeMongodb || ctx.databaseTypeNeo4j || ctx.databaseTypeCouchbase,
   });
+
+  console.log('application', JSON.stringify(Object.keys(application)));
 
   if (application.databaseTypeSql) {
     prepareSqlApplicationProperties({ application });
